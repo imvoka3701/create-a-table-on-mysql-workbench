@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thực hành: Tạo bảng trên MySQL Workbench</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0f1d;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --bg-card-hover: rgba(51, 65, 85, 0.8);
+      --border-color: rgba(148, 163, 184, 0.15);
+      --border-accent: rgba(59, 130, 246, 0.5);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --amber: #f59e0b;
+      --purple: #8b5cf6;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-glow: 0 0 25px rgba(59, 130, 246, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 30px;
+      padding: 35px;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    /* Nav Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 25px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card-hover);
+    }
+
+    .tab-btn.active {
+      color: #ffffff;
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+    }
+
+    .icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    /* Timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 15px;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .timeline-item:hover {
+      border-color: var(--border-accent);
+      transform: translateX(4px);
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(59, 130, 246, 0.2);
+      border: 2px solid var(--primary);
+      color: #60a5fa;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      font-size: 1.1rem;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .step-content p {
+      color: var(--text-muted);
+      font-size: 0.93rem;
+    }
+
+    /* Workbench Simulator */
+    .wb-mockup {
+      background: #181825;
+      border: 1px solid #313244;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .wb-titlebar {
+      background: #11111b;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #313244;
+    }
+
+    .wb-dots { display: flex; gap: 8px; align-items: center; }
+    .wb-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .wb-dot.red { background: #f38ba8; }
+    .wb-dot.yellow { background: #f9e2af; }
+    .wb-dot.green { background: #a6e3a1; }
+
+    .wb-toolbar {
+      background: #1e1e2e;
+      padding: 8px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid #313244;
+    }
+
+    .btn-tool {
+      background: #313244;
+      color: #cdd6f4;
+      border: 1px solid #45475a;
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-tool:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-tool.primary-run {
+      background: #a6e3a1;
+      color: #11111b;
+      border-color: #a6e3a1;
+    }
+
+    .btn-tool.primary-run:hover {
+      background: #94e2d5;
+    }
+
+    .wb-body {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 320px;
+    }
+
+    .wb-sidebar {
+      background: #11111b;
+      border-right: 1px solid #313244;
+      padding: 14px;
+      font-size: 0.85rem;
+    }
+
+    .wb-sidebar-title {
+      font-weight: 700;
+      color: #89b4fa;
+      margin-bottom: 10px;
+    }
+
+    .schema-tree-item {
+      padding: 5px 8px;
+      color: #a6adc8;
+      border-radius: 4px;
+      margin-bottom: 2px;
+    }
+
+    .schema-tree-item.active {
+      color: #cdd6f4;
+      font-weight: 700;
+      background: rgba(137, 180, 250, 0.15);
+    }
+
+    .table-sub-item {
+      padding-left: 20px;
+      color: #89b4fa;
+      font-size: 0.82rem;
+      display: none;
+    }
+
+    .wb-editor-pane {
+      background: #181825;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sql-code-area {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: #cdd6f4;
+      line-height: 1.6;
+      background: #11111b;
+      padding: 14px;
+      border-radius: 6px;
+      border: 1px solid #313244;
+      flex-grow: 1;
+    }
+
+    .wb-output-pane {
+      background: #11111b;
+      border-top: 1px solid #313244;
+      padding: 10px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #a6e3a1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Table Display */
+    .data-table-wrapper {
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: rgba(30, 41, 59, 0.8);
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    tr:hover td {
+      background: rgba(51, 65, 85, 0.3);
+    }
+
+    /* Code Box */
+    .code-box {
+      position: relative;
+      background: #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-top: 15px;
+    }
+
+    .btn-copy {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-copy:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: #f8fafc;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="badge-pill">Thực hành DDL • MySQL Workbench</div>
+      <h1>Tạo bảng trên MySQL Workbench</h1>
+      <p class="subtitle">Thực hành tạo cơ sở dữ liệu `demo`, kích hoạt và tạo bảng `Student` (id, name, age, country) bằng câu lệnh SQL.</p>
+    </header>
+
+    <!-- Nav Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-tutorial', this)">
+        <span>📖</span> Các bước thực hiện & Mô phỏng
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-schema', this)">
+        <span>🗂</span> Cấu trúc bảng & Kiểu dữ liệu
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-sql', this)">
+        <span>💻</span> Kịch bản SQL hoàn chỉnh
+      </button>
+    </nav>
+
+    <!-- TAB 1: Tutorial & Interactive Simulator -->
+    <section id="tab-tutorial" class="tab-content active">
+      <div class="glass-card">
+        <h2 class="card-title">
+          <span class="icon-box" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">📖</span>
+          Quy trình thực thi từng câu lệnh theo giáo trình
+        </h2>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Tạo cơ sở dữ liệu `demo`</h3>
+              <p>Mở tab SQL mới (<code>Ctrl + T</code>) và gõ lệnh: <code>create database demo;</code>. Đặt con trỏ chuột và nhấn <code>Ctrl + Enter</code> để thực thi.</p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Chọn CSDL làm việc: `use demo;`</h3>
+              <p>Thiết lập ngữ cảnh làm việc hiện tại vào database `demo`. Mọi bảng tạo tiếp theo sẽ nằm trong database này.</p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Tạo bảng `Student`</h3>
+              <p>Chạy khối lệnh tạo bảng với 4 trường: <code>id</code> (int), <code>name</code> (varchar(200)), <code>age</code> (int), <code>country</code> (varchar(50)).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workbench Simulator UI -->
+        <h3 style="margin-top: 30px; margin-bottom: 12px; color: #ffffff;">⚡ Trình mô phỏng thực thi từng bước (Interactive Simulator):</h3>
+        
+        <div class="wb-mockup">
+          <div class="wb-titlebar">
+            <div class="wb-dots">
+              <span class="wb-dot red"></span>
+              <span class="wb-dot yellow"></span>
+              <span class="wb-dot green"></span>
+              <span style="font-size:0.85rem; color:#a6adc8; margin-left: 6px; font-family:'JetBrains Mono', monospace;">MySQL Workbench - Query 1</span>
+            </div>
+            <span style="font-size:0.8rem; color:#89b4fa; font-family:'JetBrains Mono', monospace;">root@localhost:3306</span>
+          </div>
+
+          <div class="wb-toolbar">
+            <button class="btn-tool primary-run" onclick="stepRunNext()">
+              ⚡ <span id="run-btn-label">Chạy lệnh 1: CREATE DATABASE</span>
+            </button>
+            <button class="btn-tool" onclick="resetSimulator()">
+              🔄 Bắt đầu lại
+            </button>
+          </div>
+
+          <div class="wb-body">
+            <!-- Sidebar -->
+            <div class="wb-sidebar">
+              <div class="wb-sidebar-title">SCHEMAS</div>
+              <div id="sim-schema-sakila" class="schema-tree-item">📁 sakila</div>
+              <div id="sim-schema-world" class="schema-tree-item">📁 world</div>
+              <div id="sim-schema-demo" class="schema-tree-item" style="display:none;">
+                <span id="demo-name">📁 demo</span>
+                <div id="sim-table-student" class="table-sub-item">📄 Student</div>
+              </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="wb-editor-pane">
+              <div class="sql-code-area" id="sim-code-display">
+-- Nhấp vào nút "Chạy lệnh 1: CREATE DATABASE" ở thanh công cụ phía trên!
+create database demo;
+              </div>
+            </div>
+          </div>
+
+          <div class="wb-output-pane" id="sim-output">
+            <span>ℹ️ Sẵn sàng. Nhấn nút màu xanh để thực thi câu lệnh.</span>
+          </div>
+        </div>
+
+        <!-- Resulting Table -->
+        <div id="sim-table-result" style="display: none; margin-top: 25px;">
+          <h4 style="color: #60a5fa; margin-bottom: 10px;">📊 Dữ liệu hiển thị trong bảng `Student` (demo.Student):</h4>
+          <div class="data-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>id (INT)</th>
+                  <th>name (VARCHAR(200))</th>
+                  <th>age (INT)</th>
+                  <th>country (VARCHAR(50))</th>
+                </tr>
+              </thead>
+              <tbody id="student-tbody">
+                <tr>
+                  <td>1</td>
+                  <td>Nguyễn Văn Nam</td>
+                  <td>20</td>
+                  <td>Việt Nam</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Alice Johnson</td>
+                  <td>21</td>
+                  <td>Hoa Kỳ</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>Kenji Sato</td>
+                  <td>22</td>
+                  <td>Nhật Bản</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Table Schema & Data Types -->
+    <section id="tab-schema" class="tab-content">
+      <div class="glass-card">
+        <h2 class="card-title">
+          <span class="icon-box" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">🗂</span>
+          Cấu trúc bảng `Student` & Bảng tra cứu kiểu dữ liệu
+        </h2>
+
+        <h3 style="color: #60a5fa; margin-bottom: 12px;">1. Cấu trúc trường dữ liệu của bảng `Student`:</h3>
+        <div class="data-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tên cột (Field)</th>
+                <th>Kiểu dữ liệu (Data Type)</th>
+                <th>Ý nghĩa nghiệp vụ</th>
+                <th>Ví dụ dữ liệu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>id</code></td>
+                <td><code>INT</code></td>
+                <td>Mã định danh duy nhất của sinh viên</td>
+                <td><code>1</code>, <code>2</code>, <code>101</code></td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td><code>VARCHAR(200)</code></td>
+                <td>Họ và tên của sinh viên (tối đa 200 ký tự)</td>
+                <td><code>"Nguyễn Văn Nam"</code></td>
+              </tr>
+              <tr>
+                <td><code>age</code></td>
+                <td><code>INT</code></td>
+                <td>Tuổi của sinh viên</td>
+                <td><code>19</code>, <code>20</code>, <code>22</code></td>
+              </tr>
+              <tr>
+                <td><code>country</code></td>
+                <td><code>VARCHAR(50)</code></td>
+                <td>Quốc gia / quê quán (tối đa 50 ký tự)</td>
+                <td><code>"Việt Nam"</code>, <code>"Hoa Kỳ"</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="color: #60a5fa; margin-top: 30px; margin-bottom: 12px;">2. Các kiểu dữ liệu thường dùng trong MySQL:</h3>
+        <div class="data-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nhóm kiểu</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Phạm vi / Quy cách</th>
+                <th>Ứng dụng phù hợp</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Số nguyên</td>
+                <td><code>INT</code></td>
+                <td>4 bytes (~ -2.1 tỷ đến +2.1 tỷ)</td>
+                <td>Mã ID, số lượng, tuổi, điểm số</td>
+              </tr>
+              <tr>
+                <td>Chuỗi ký tự</td>
+                <td><code>VARCHAR(N)</code></td>
+                <td>Độ dài thay đổi từ 0 đến N ký tự</td>
+                <td>Tên người, email, địa chỉ, tiêu đề</td>
+              </tr>
+              <tr>
+                <td>Chuỗi cố định</td>
+                <td><code>CHAR(N)</code></td>
+                <td>Độ dài cố định chính xác N ký tự</td>
+                <td>Mã quốc gia (VN, US), mã tiền tệ (VND, USD)</td>
+              </tr>
+              <tr>
+                <td>Số thực / Tiền tệ</td>
+                <td><code>DECIMAL(M, D)</code></td>
+                <td>Độ chính xác tuyệt đối không bị sai số</td>
+                <td>Giá bán, tiền lương, doanh thu</td>
+              </tr>
+              <tr>
+                <td>Ngày tháng</td>
+                <td><code>DATE</code> / <code>DATETIME</code></td>
+                <td>Lưu ngày (YYYY-MM-DD) và giờ</td>
+                <td>Ngày sinh, ngày đặt hàng, thời gian tạo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Complete SQL Script -->
+    <section id="tab-sql" class="tab-content">
+      <div class="glass-card">
+        <h2 class="card-title">
+          <span class="icon-box" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa;">💻</span>
+          Kịch bản SQL đầy đủ (create_table.sql)
+        </h2>
+
+        <div class="code-box">
+          <button class="btn-copy" onclick="copySql('full-sql-code')">Sao chép SQL</button>
+          <pre><code id="full-sql-code">-- 1. Tạo cơ sở dữ liệu demo
+create database demo;
+
+-- 2. Chọn CSDL demo để làm việc
+use demo;
+
+-- 3. Tạo bảng Student
+create table Student (
+    id int,
+    name varchar(200),
+    age int,
+    country varchar(50)
+);
+
+-- 4. Kiểm tra cấu trúc bảng vừa tạo
+DESCRIBE Student;
+
+-- 5. Thêm dữ liệu mẫu vào bảng
+INSERT INTO Student (id, name, age, country) VALUES
+(1, 'Nguyễn Văn Nam', 20, 'Việt Nam'),
+(2, 'Alice Johnson', 21, 'Hoa Kỳ'),
+(3, 'Kenji Sato', 22, 'Nhật Bản');
+
+-- 6. Truy vấn hiển thị dữ liệu
+SELECT * FROM Student;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2026 Bài thực hành Tạo bảng trên MySQL Workbench • CodeGym Curriculum</p>
+    </footer>
+  </div>
+
+  <script>
+    let currentStep = 1;
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function copySql(elementId) {
+      const code = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Đã sao chép câu lệnh SQL vào clipboard!');
+      });
+    }
+
+    function stepRunNext() {
+      const label = document.getElementById('run-btn-label');
+      const codeDisplay = document.getElementById('sim-code-display');
+      const output = document.getElementById('sim-output');
+
+      if (currentStep === 1) {
+        document.getElementById('sim-schema-demo').style.display = 'block';
+        output.innerHTML = '<span>✓ 17:03:10 CREATE DATABASE demo - 1 row(s) affected</span>';
+        codeDisplay.innerText = 'use demo;';
+        label.innerText = 'Chạy lệnh 2: USE demo;';
+        currentStep = 2;
+      } else if (currentStep === 2) {
+        document.getElementById('sim-schema-demo').classList.add('active');
+        output.innerHTML = '<span>✓ 17:03:15 USE demo - 0 row(s) affected</span>';
+        codeDisplay.innerText = 'create table Student(\n id int,\n name varchar(200),\n age int,\n country varchar(50)\n);';
+        label.innerText = 'Chạy lệnh 3: CREATE TABLE Student';
+        currentStep = 3;
+      } else if (currentStep === 3) {
+        document.getElementById('sim-table-student').style.display = 'block';
+        output.innerHTML = '<span>✓ 17:03:20 CREATE TABLE Student - 0 row(s) affected</span>';
+        codeDisplay.innerText = '-- Xem dữ liệu vừa tạo:\nSELECT * FROM Student;';
+        label.innerText = 'Xem dữ liệu bảng Student (SELECT)';
+        currentStep = 4;
+      } else if (currentStep === 4) {
+        document.getElementById('sim-table-result').style.display = 'block';
+        output.innerHTML = '<span>✓ 17:03:25 SELECT * FROM Student - 3 row(s) returned</span>';
+        label.innerText = 'Hoàn tất! (Bấm để chạy lại từ đầu)';
+        currentStep = 5;
+      } else {
+        resetSimulator();
+      }
+    }
+
+    function resetSimulator() {
+      currentStep = 1;
+      document.getElementById('sim-schema-demo').style.display = 'none';
+      document.getElementById('sim-schema-demo').classList.remove('active');
+      document.getElementById('sim-table-student').style.display = 'none';
+      document.getElementById('sim-table-result').style.display = 'none';
+      document.getElementById('sim-code-display').innerText = 'create database demo;';
+      document.getElementById('sim-output').innerHTML = '<span>ℹ️ Sẵn sàng. Nhấn nút màu xanh để thực thi câu lệnh.</span>';
+      document.getElementById('run-btn-label').innerText = 'Chạy lệnh 1: CREATE DATABASE';
+    }
+  </script>
+</body>
+</html>
